@@ -225,13 +225,25 @@ exports.handler = async function(event, context) {
 
   try {
     const pages = await queryDatabase(dbId, token);
+
+    if (pages.length > 0) {
+      const raw = pages[0].properties;
+      console.log('FIELDS:', JSON.stringify(Object.keys(raw)));
+      console.log('ACTIVO:', JSON.stringify(raw['Activo']));
+      console.log('CATEGORIA:', JSON.stringify(raw['Categoria']));
+    } else {
+      console.log('Notion: 0 paginas devueltas');
+    }
+
     const items = pages.map(mapPage);
-    const data  = buildData(items);
+    console.log('Items:', JSON.stringify(items));
+
+    const data = buildData(items);
 
     return {
       statusCode: 200,
-      headers: { ...headers, 'Cache-Control': 'public, max-age=60' }, // cache 1 min
-      body: JSON.stringify({ data }),
+      headers: { ...headers, 'Cache-Control': 'no-store' },
+      body: JSON.stringify({ data, _debug: { total: pages.length, items } }),
     };
   } catch (err) {
     console.error('Error fetching Notion:', err);
