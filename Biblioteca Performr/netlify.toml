@@ -1,6 +1,7 @@
 [build]
-  publish = "."
-  functions = "netlify/functions"
+  base = "Biblioteca Performr"
+  publish = "Biblioteca Performr"
+  functions = "Biblioteca Performr/netlify/functions"
 
 [[headers]]
   for = "/*"
