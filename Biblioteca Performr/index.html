@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Biblioteca Performr</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --border: #E4E2DC;
+    --border-strong: #C8C5BC;
+    --text-primary: #1A1916;
+    --text-secondary: #6B6860;
+    --text-tertiary: #A09D96;
+    --accent: #1A1916;
+
+    --cat-recovery: #0F6E56;
+    --cat-recovery-bg: #E1F5EE;
+    --cat-nutricion: #185FA5;
+    --cat-nutricion-bg: #E6F1FB;
+    --cat-rendimiento: #534AB7;
+    --cat-rendimiento-bg: #EEEDFE;
+    --cat-bienestar: #993556;
+    --cat-bienestar-bg: #FBEAF0;
+    --cat-performr: #1A1916;
+    --cat-performr-bg: #F1EFE8;
+
+    --type-tip-text: #0F6E56; --type-tip-bg: #E1F5EE;
+    --type-tecnica-text: #3C3489; --type-tecnica-bg: #EEEDFE;
+    --type-herramienta-text: #633806; --type-herramienta-bg: #FAEEDA;
+    --type-protocolo-text: #712B13; --type-protocolo-bg: #FAECE7;
+    --type-guia-text: #0C447C; --type-guia-bg: #E6F1FB;
+    --type-mito-text: #791F1F; --type-mito-bg: #FCEBEB;
+    --type-score-text: #3C3489; --type-score-bg: #EEEDFE;
+    --type-calculadora-text: #633806; --type-calculadora-bg: #FAEEDA;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2.5rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+  }
+  .logo span { color: var(--text-primary); }
+  .header-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+  .header-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  /* SEARCH */
+  .search-wrap {
+    position: relative;
+    max-width: 340px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    pointer-events: none;
+    font-size: 14px;
+  }
+  .search-input {
+    width: 100%;
+    padding: 8px 14px 8px 34px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--border-strong); }
+  .search-input::placeholder { color: var(--text-tertiary); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-top: 1.25rem;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .tab-btn:hover { color: var(--text-primary); }
+  .tab-btn.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+  .tab-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .tab-count {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1px 7px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+  .tab-btn.active .tab-count { background: var(--text-primary); border-color: var(--text-primary); color: white; }
+
+  /* MAIN */
+  .main { padding: 2rem 2.5rem; max-width: 1200px; }
+
+  /* TYPE FILTERS */
+  .type-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+  .type-filters-label { font-size: 12px; color: var(--text-tertiary); margin-right: 2px; }
+  .type-filter-btn {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .type-filter-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+  .type-filter-btn.active { background: var(--text-primary); border-color: var(--text-primary); color: white; }
+
+  /* GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.1rem 1.25rem 1.25rem;
+    transition: border-color 0.15s, transform 0.15s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .card.expanded { border-color: var(--border-strong); transform: none; }
+
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .card-badge {
+    font-size: 10.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.4; letter-spacing: -0.01em; }
+  .card-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; font-weight: 300; flex: 1; }
+
+  /* EXPAND TOGGLE */
+  .card-expand-btn {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bg); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: var(--text-tertiary);
+    font-size: 11px; transition: all 0.2s; margin-top: 1px;
+  }
+  .card.expanded .card-expand-btn { background: var(--text-primary); border-color: var(--text-primary); color: white; transform: rotate(180deg); }
+
+  /* EXPANDED CONTENT */
+  .card-expanded-body {
+    display: none;
+    margin-top: 4px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card.expanded .card-expanded-body { display: flex; }
+
+  /* ZONE PILLS */
+  .zones-list { display: flex; flex-direction: column; gap: 8px; }
+  .zone-item {
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .zone-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;
+  }
+  .zone-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .zone-text { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; font-weight: 300; }
+  .zone-green { background: #F0FAF5; }
+  .zone-green .zone-label { color: #0A5C45; }
+  .zone-green .zone-dot { background: #1D9E75; }
+  .zone-yellow { background: #FEFBEC; }
+  .zone-yellow .zone-label { color: #7A5C00; }
+  .zone-yellow .zone-dot { background: #E0B020; }
+  .zone-red { background: #FEF2F2; }
+  .zone-red .zone-label { color: #7C1F1F; }
+  .zone-red .zone-dot { background: #DC2626; }
+
+  /* EXERCISE LIST */
+  .exercise-list { display: flex; flex-direction: column; gap: 5px; margin-top: 2px; }
+  .exercise-item {
+    font-size: 12px; color: var(--text-secondary); line-height: 1.5;
+    padding-left: 14px; position: relative; font-weight: 300;
+  }
+  .exercise-item::before { content: '→'; position: absolute; left: 0; color: var(--text-tertiary); font-size: 11px; top: 1px; }
+
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+  .card-cat-tag {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .card-cat-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* PERFORMR SCORES */
+  .scores-intro {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .scores-intro-icon { font-size: 20px; margin-top: 2px; }
+  .scores-intro-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; font-weight: 300; }
+  .scores-intro-text strong { color: var(--text-primary); font-weight: 500; }
+
+  /* SCORE CARD SPECIAL */
+  .card.score-card { border-left: 3px solid #534AB7; }
+  .score-value-area { margin-top: 4px; }
+  .score-bar-track {
+    height: 4px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-top: 8px;
+  }
+  .score-bar-fill {
+    height: 100%; border-radius: 4px; background: linear-gradient(90deg, #7F77DD, #534AB7);
+    width: 0%; transition: width 1s ease;
+  }
+  .score-range { font-size: 11px; color: var(--text-tertiary); margin-top: 5px; font-family: 'DM Mono', monospace; }
+
+  /* EMPTY */
+  .empty { padding: 3rem; text-align: center; color: var(--text-tertiary); font-size: 14px; }
+  .empty-icon { font-size: 32px; margin-bottom: 0.5rem; }
+
+  /* SECTION LABEL for performr */
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    font-family: 'DM Mono', monospace;
+    margin: 1.5rem 0 0.75rem;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  @media (max-width: 640px) {
+    .header { padding: 1.25rem 1.25rem 0; }
+    .header-top { flex-direction: column; gap: 1rem; }
+    .main { padding: 1.25rem; }
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+
+  
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 1000; display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); max-width: 600px; width: 100%;
+    max-height: 85vh; overflow-y: auto; padding: 2rem; position: relative;
+    transform: translateY(12px); transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal-box { transform: translateY(0); }
+  .modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 50%; width: 30px; height: 30px; font-size: 15px;
+    cursor: pointer; color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: var(--border); }
+  .modal-badge { font-size: 10.5px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.05em; padding: 3px 9px; border-radius: 20px;
+    display: inline-block; margin-bottom: 10px; }
+  .modal-title { font-size: 20px; font-weight: 600; color: var(--text-primary);
+    letter-spacing: -0.02em; margin-bottom: 8px; line-height: 1.3; padding-right: 2rem; }
+  .modal-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; font-weight: 300; }
+  .modal-divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+  .modal-extra { font-size: 13px; color: var(--text-secondary); line-height: 1.75; font-weight: 300; }
+  .modal-extra strong { color: var(--text-primary); font-weight: 500; }
+  .modal-zonas-label { font-size: 11px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+  .modal-zonas { display: flex; flex-direction: column; gap: 10px; }
+  .modal-zona { border-radius: var(--radius-md); padding: 1rem 1.1rem; border-left: 3px solid transparent; }
+  .zona-green { background: #F0FAF6; border-color: #0F6E56; }
+  .zona-orange { background: #FFF4EC; border-color: #D4680A; }
+  .zona-yellow { background: #FEFBF0; border-color: #C49A14; }
+  .zona-red { background: #FEF2F2; border-color: #C0392B; }
+  .zona-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 5px; }
+  .zona-green .zona-label { color: #0F6E56; }
+  .zona-orange .zona-label { color: #B35500; }
+  .zona-yellow .zona-label { color: #A07D10; }
+  .zona-red .zona-label { color: #C0392B; }
+  .zona-texto { font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 8px; }
+  .zona-ejercicios { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .zona-ejercicios li { font-size: 12.5px; color: var(--text-secondary);
+    padding-left: 14px; position: relative; line-height: 1.5; }
+  .zona-ejercicios li::before { content: '→'; position: absolute; left: 0;
+    color: var(--text-tertiary); font-size: 11px; }
+  .modal-img { width: 100%; border-radius: var(--radius-md); margin: 1rem 0 0; object-fit: cover; max-height: 240px; }
+  .modal-video { margin-top: 1rem; border-radius: var(--radius-md);
+    overflow: hidden; aspect-ratio: 16/9; background: var(--bg); }
+  .modal-video iframe { width: 100%; height: 100%; border: none; }
+  .card { cursor: pointer; }
+  .card-more { font-size: 11px; color: var(--text-tertiary); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="logo"><span>Performr</span> · Biblioteca</div>
+      <div class="header-title">Tu centro de recursos</div>
+      <div class="header-subtitle">Tips, técnicas, herramientas y protocolos para rendir mejor</div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">&#128269;</span>
+      <input class="search-input" type="text" id="search" placeholder="Buscar recursos..." oninput="renderAll()" />
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <!-- rendered by JS -->
+  </div>
+</div>
+
+<div class="main" id="main">
+  <!-- rendered by JS -->
+</div>
+
+<script>
+const TIPOS = {
+  tip:            { label: 'Tip',              textVar: '#0F6E56', bgVar: '#E1F5EE' },
+  tecnica:        { label: 'Técnica',          textVar: '#3C3489', bgVar: '#EEEDFE' },
+  herramienta:    { label: 'Herramienta',      textVar: '#633806', bgVar: '#FAEEDA' },
+  protocolo:      { label: 'Protocolo',        textVar: '#712B13', bgVar: '#FAECE7' },
+  guia:           { label: 'Guía',             textVar: '#0C447C', bgVar: '#E6F1FB' },
+  mito:           { label: 'Mito vs Realidad', textVar: '#791F1F', bgVar: '#FCEBEB' },
+  calculadora:    { label: 'Calculadora',      textVar: '#633806', bgVar: '#FAEEDA' },
+  score:          { label: 'Score',            textVar: '#3C3489', bgVar: '#EEEDFE' },
+  rutina:         { label: 'Rutina',           textVar: '#085041', bgVar: '#E1F5EE' },
+  'como-mejorar': { label: 'Cómo mejorar',    textVar: '#3C3489', bgVar: '#EEEDFE' },
+};
+
+// Normaliza tipo que viene de Notion (sin tilde) al key de TIPOS
+function normalizeTipo(t) {
+  if (!t) return 'tip';
+  return (t + '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[-_\s]+/g, '-').trim();
+}
+
+const CAT_COLORS = {
+  'Recuperación': '#0F6E56',
+  'Nutrición':    '#185FA5',
+  'Rendimiento':  '#534AB7',
+  'Bienestar':    '#993556',
+  'Performr':     '#1A1916',
+  'Rutinas':      '#BA7517',
+};
+
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const DATA = [
+  {
+    categoria: 'Rendimiento',
+    recursos: [
+      {
+        tipo: 'tip',
+        titulo: 'Calentamiento efectivo',
+        desc: '10 min mínimo: movilidad articular + activación muscular + trabajo específico al 60% de intensidad. Un buen calentamiento puede mejorar tu rendimiento hasta un 20%.',
+      },
+      {
+        tipo: 'tip',
+        titulo: 'Pico de rendimiento diario',
+        desc: 'La mayoría rinde mejor entre las 15 y las 19 hs por temperatura corporal y fuerza muscular. Programá tus sesiones más exigentes en ese rango cuando sea posible.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Periodización básica',
+        desc: 'Alternará semanas de carga progresiva con semanas de descarga (deload) cada 3-4 semanas. La adaptación ocurre en la recuperación, no durante el esfuerzo.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Zonas de frecuencia cardíaca',
+        desc: 'Z1-Z2 para base aeróbica, Z3-Z4 para umbral, Z5 para picos. Cada zona tiene su función y el error más común es entrenar siempre en Z3, la "zona gris".',
+      },
+      {
+        tipo: 'protocolo',
+        titulo: 'Tapering pre-competencia',
+        desc: 'Reducí el volumen un 40-60% en los últimos 7-10 días manteniendo la intensidad. Llegás fresco, con más glucógeno y el sistema nervioso recuperado.',
+      },
+      {
+        tipo: 'herramienta',
+        titulo: 'Planificador semanal',
+        desc: 'Organizá tus sesiones por tipo, intensidad y recuperación para una semana balanceada. El objetivo es maximizar la carga sin comprometer la adaptación.',
+      },
+      {
+        tipo: 'guia',
+        titulo: 'Métricas clave a trackear',
+        desc: 'RPE, HRV, calidad del sueño y estado anímico son mejores predictores del rendimiento que solo el peso. Registrarlos 3 semanas ya muestra patrones útiles.',
+      },
+      {
+        tipo: 'guia',
+        titulo: 'Desarrollo de resiliencia física y mental',
+        desc: 'La resiliencia no es aguantar el dolor: es aprender a gestionar la incomodidad. Se entrena con exposición progresiva al estrés, tanto físico (cargas más altas) como mental (situaciones de presión controlada). Un atleta resiliente toma mejores decisiones cuando está cansado.',
+      },
+      {
+        tipo: 'guia',
+        titulo: 'Carga de entrenamiento y adaptación',
+        desc: 'La carga tiene dos dimensiones: volumen (cuánto) e intensidad (qué tan fuerte). Aumentar ambas al mismo tiempo es el camino al sobreentrenamiento. La regla de oro: no aumentes más del 10% semanal. La adaptación —la mejora real— ocurre en las 24-72 hs post esfuerzo, mientras descansás.',
+      },
+      {
+        tipo: 'guia',
+        titulo: 'Mejorar tu rendimiento deportivo',
+        desc: 'El rendimiento es la suma de entrenamiento, recuperación, nutrición y mentalidad. Mejorar solo uno de los cuatro tiene límites. Los atletas que más progresan son los que son consistentes en los cuatro pilares, no los que se matan entrenando en uno solo.',
+      },
+    ]
+  },
+  {
+    categoria: 'Nutrición',
+    recursos: [
+      {
+        tipo: 'tip',
+        titulo: 'Timing pre-entreno',
+        desc: 'Comé carbohidratos de digestión media 2-3 hs antes. Un snack liviano (banana + mantequilla de maní) alcanza si son 45 min. Entrar con glucógeno disponible marca diferencia en esfuerzos de más de 60 min.',
+      },
+      {
+        tipo: 'tip',
+        titulo: 'Ventana anabólica real',
+        desc: 'Tenés hasta 2 hs post-entreno para comer proteína. No es tan urgente como se cree, pero sí existe. Apuntá a 25-40g de proteína de calidad en esa ventana para optimizar la síntesis muscular.',
+      },
+      {
+        tipo: 'tip',
+        titulo: 'Señales de hambre real',
+        desc: 'El hambre real aparece gradualmente, el hambre emocional es repentina e intensa. Aprendé a distinguirlas: esperá 10 min antes de comer. Si sigue, es hambre real. Si pasó, era otra cosa.',
+      },
+      {
+        tipo: 'guia',
+        titulo: 'Hidratación según intensidad',
+        desc: 'Baja: 400-600ml/h · Media: 600-900ml/h · Alta: 900-1200ml/h. Ajustá por calor y sudoración personal. Una pérdida del 2% del peso corporal en agua ya reduce el rendimiento hasta un 10%.',
+      },
+      {
+        tipo: 'guia',
+        titulo: 'Macros por objetivo',
+        desc: 'Fuerza: proteína 2g/kg, carbs moderados, grasas saludables. Resistencia: más carbs (5-7g/kg), proteína 1.4-1.6g/kg. Pérdida de grasa: déficit del 15-20% en calorías, proteína alta para preservar masa muscular.',
+      },
+      {
+        tipo: 'mito',
+        titulo: 'El gluten arruina el rendimiento',
+        desc: 'Solo afecta a celíacos o personas con sensibilidad diagnosticada. En deportistas sin diagnóstico, múltiples estudios no muestran beneficio de eliminarlo. Evitarlo puede quitarte fuentes importantes de carbohidratos de calidad.',
+      },
+      {
+        tipo: 'mito',
+        titulo: 'Hay que comer cada 2-3 horas',
+        desc: 'La frecuencia de comidas no define el metabolismo ni la composición corporal. Lo que importa es el total diario y la calidad. Comé cuando tenés hambre y de acuerdo a tus entrenamientos.',
+      },
+      {
+        tipo: 'calculadora',
+        titulo: 'Calculadora de nutrición',
+        desc: 'Estimá tus necesidades diarias de calorías, proteínas, carbohidratos y grasas según tu peso, objetivo y nivel de actividad. Ejemplo: una persona de 60 kg en fase de mantenimiento necesita aprox. 90-120g de proteína, 200-250g de carbs y 55-70g de grasas diarias.',
+      },
+      {
+        tipo: 'guia',
+        titulo: 'Carb loading',
+        desc: 'La carga de carbohidratos es una estrategia para maximizar las reservas de glucógeno antes de una competencia de más de 90 min. 48-72 hs antes: aumentá los carbs a 8-10g/kg/día, reducí la fibra, el entreno y las grasas. No es una excusa para comer de todo: la calidad importa.',
+        extra: '<strong>¿Para quién aplica?</strong><br>→ Eventos de más de 90 min continuos (maratón, triatlón, ciclismo de ruta, trail)<br>→ No tiene sentido para eventos cortos o de fuerza<br><br><strong>Protocolo 72-48 hs antes:</strong><br>→ Carbs: 8-10g por kg de peso corporal (ej: 70kg = 560-700g de carbs/día)<br>→ Reducir fibra: evitar legumbres, vegetales crudos, pan integral — priorizá arroz blanco, pasta, papa<br>→ Grasas: reducir al mínimo para dejar espacio calórico a los carbs<br>→ Proteína: mantener normal (no aumentar)<br>→ Entrenamiento: solo activación suave — no volumen<br><br><strong>Ejemplos de comidas:</strong><br>→ Desayuno: avena + banana + miel + jugo de naranja<br>→ Almuerzo: arroz blanco + pollo + pan<br>→ Cena: pasta con salsa de tomate + pan<br>→ Snacks: frutas, tostadas, bebidas deportivas<br><br><strong>Errores comunes:</strong><br>→ Comer alimentos nuevos que el estómago no conoce — siempre cosas probadas<br>→ Aumentar las grasas junto con los carbs — infla sin cargar glucógeno<br>→ Hacerlo en eventos cortos — solo genera pesadez',
+      },
+      {
+        tipo: 'guia',
+        titulo: 'Guía de suplementos con evidencia',
+        desc: 'Los suplementos con mayor respaldo científico son: Creatina monohidratada (fuerza y recuperación), Cafeína (rendimiento aeróbico y de fuerza), Beta-alanina (resistencia muscular), Bicarbonato de sodio (esfuerzos de alta intensidad cortos), Vitamina D (si hay deficiencia), Omega-3 (antiinflamatorio y recuperación). Todo lo demás tiene evidencia débil o mixta.',
+      },
+    ]
+  },
+  {
+    categoria: 'Recuperación',
+    recursos: [
+      {
+        tipo: 'tip',
+        titulo: 'Los 3 pilares post-entreno',
+        desc: 'Hidratación, nutrición y sueño en las primeras 2 hs son decisivos para tu recuperación. Los tres juntos aceleran la recuperación muscular y reducen el daño oxidativo.',
+      },
+      {
+        tipo: 'tip',
+        titulo: 'Sueño como herramienta de rendimiento',
+        desc: 'Dormir 7-9 hs optimiza la síntesis proteica y la consolidación motora. Es cuando más mejorás. La privación de sueño reduce la fuerza, la velocidad de reacción y aumenta el riesgo de lesiones.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Foam rolling',
+        desc: 'Trabajá los grupos musculares principales 60-90 seg cada uno antes y después del entreno. Movimientos lentos, deteniéndote en los puntos de mayor tensión. No es para "romper nudos", sino para mejorar la circulación y reducir la rigidez.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Contraste de temperatura',
+        desc: 'Calor 3 min → frío 1 min, repetido 3-4 veces. Reduce la inflamación y acelera la recuperación muscular activando el sistema vascular. Podés hacerlo en ducha o usando baño de pies.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Importancia de la respiración en la recuperación',
+        desc: 'La respiración lenta y profunda activa el sistema nervioso parasimpático, reduciendo el cortisol y acelerando la recuperación. 5-10 min de respiración consciente post-sesión (4 seg inhala, 6 exhala) pueden marcar diferencia en cómo te sentís al día siguiente.',
+      },
+      {
+        tipo: 'protocolo',
+        titulo: 'Recuperación post sesión fuerte/larga',
+        desc: '1. Hidratación inmediata: 500ml de agua con sal y limón. 2. Nutrición en 30-60 min: proteína + carbs. 3. Foam rolling o stretching suave: 10 min. 4. Ducha de contraste. 5. Elevar piernas 10 min si fue sesión de pierna. 6. Sin entrenamiento intenso en las próximas 24-48 hs.',
+        extra: '<strong>Protocolo completo paso a paso:</strong><br><br>🕐 <strong>Primeros 15 min</strong><br>→ Bebé 500ml de agua con una pizca de sal y limón (electrolitos básicos)<br>→ Si fue más de 90 min o con calor: agregá una banana o 20g de carbohidratos simples<br><br>🕐 <strong>30-60 min post sesión</strong><br>→ Comida completa: 25-40g de proteína + carbohidratos de digestión media<br>→ Ejemplos: pollo + arroz, huevos + pan integral, yogur griego + frutas<br><br>🧘 <strong>Recuperación física (10-15 min)</strong><br>→ Foam rolling en grupos trabajados: 60-90 seg por grupo, movimiento lento<br>→ Stretching dinámico suave — no estático profundo cuando el músculo está caliente<br>→ Si fue sesión de piernas: 10 min con piernas elevadas contra la pared<br><br>🚿 <strong>Ducha de contraste</strong><br>→ Caliente 3 min → frío 1 min → repetir 3 veces → terminar en frío<br>→ Reduce la inflamación y activa la circulación de retorno<br><br>😴 <strong>Las próximas 24 hs</strong><br>→ Sin entrenamiento intenso — sesión suave o descanso activo<br>→ Priorizar 8 hs de sueño: es cuando ocurre la síntesis proteica real<br>→ Hidratación continua: orina debe ser amarillo claro',
+      },
+      {
+        tipo: 'protocolo',
+        titulo: 'Hábitos de recuperación física',
+        desc: 'Los hábitos diarios importan más que los protocolos puntuales: caminá (activa la recuperación sin estresar el sistema), priorizá el sueño sobre la última sesión del día, no entrenes dos días intensos seguidos sin un día suave en el medio, y monitoreá tu HRV para detectar cuando tu cuerpo no está listo.',
+      },
+      {
+        tipo: 'herramienta',
+        titulo: 'Higiene de sueño – checklist última hora',
+        desc: '✓ Bajá la temperatura del cuarto (18-20°C es ideal). ✓ Apagá pantallas o usá modo nocturno. ✓ Sin cafeína después de las 14 hs. ✓ Anota 3 cosas del día en un diario (vacía la mente). ✓ 5 min de respiración lenta. ✓ Mismo horario todos los días (incluso fines de semana).',
+        extra: '<strong>Checklist completo — última hora del día:</strong><br><br><strong>90 min antes de dormir</strong><br>→ ☐ Último café o té con cafeína (vida media: 5-7 hs)<br>→ ☐ Cena liviana si cenás tarde — evitar comidas pesadas 90 min antes<br>→ ☐ Apagar pantallas brillantes o activar modo nocturno<br><br><strong>60 min antes</strong><br>→ ☐ Temperatura del cuarto: bajar a 18-20°C (el más impactante de todos)<br>→ ☐ Oscuridad total o antifaz<br>→ ☐ Ducha tibia (baja la temperatura corporal y facilita el sueño)<br>→ ☐ Dejar el teléfono fuera del cuarto o en modo avión<br><br><strong>30 min antes</strong><br>→ ☐ Lectura en papel o actividad relajante<br>→ ☐ Escribir 3 cosas del día + lo que tenés pendiente mañana (vacía la mente)<br>→ ☐ 5 min de respiración 4-7-8 o escaneo corporal<br><br><strong>La regla más importante</strong><br>→ Mismo horario todos los días — incluso fines de semana. El ritmo circadiano tarda 1 semana en ajustarse a cada cambio de horario.',
+      },
+      {
+        tipo: 'herramienta',
+        titulo: 'Temporizador de recuperación',
+        desc: 'Configurá bloques de trabajo, pausa activa y recuperación total con alertas. Usalo para estructurar sesiones de recuperación activa, series de respiración o rutinas post-entreno guiadas.',
+      },
+    ]
+  },
+  {
+    categoria: 'Bienestar',
+    recursos: [
+      {
+        tipo: 'tecnica',
+        titulo: 'Box breathing',
+        desc: 'Inhala 4 seg · retiene 4 · exhala 4 · retiene 4. Ideal antes de competir o en situaciones de presión. Regula el sistema nervioso y baja la frecuencia cardíaca en menos de 3 minutos.',
+        extra: '<strong>Cómo practicarlo:</strong><br><br>1. Sentate o quedate de pie con la espalda recta<br>2. Exhalá completamente para vaciar los pulmones<br>3. Inhala por la nariz contando 4 segundos<br>4. Retenés el aire 4 segundos (sin tensión)<br>5. Exhalá por la boca contando 4 segundos<br>6. Retenés vacío 4 segundos<br>7. Repetir 4-6 rondas (3-4 minutos)<br><br><strong>Cuándo usarlo:</strong><br>→ Antes de competir o una situación de presión<br>→ En momentos de ansiedad aguda<br>→ Para resetear entre series de entrenamiento<br>→ Antes de una presentación o situación estresante<br><br><strong>Por qué funciona:</strong><br>La retención post-exhala activa el nervio vago, que frena directamente el sistema simpático (modo lucha/huida). En 3-4 minutos, la frecuencia cardíaca baja y la mente se aclara. Es la técnica de regulación más usada por fuerzas especiales y atletas de élite.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Respiración 4-7-8',
+        desc: 'Inhala 4 seg, retiene 7, exhala 8. Activa el sistema parasimpático en profundidad. Es la técnica más efectiva para conciliar el sueño o calmar la mente después de un día de alta carga.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Grounding 5-4-3-2-1',
+        desc: 'Nombrá 5 cosas que ves, 4 que tocás, 3 que oís, 2 que olés, 1 que saboreás. Ancla al momento presente de manera inmediata. Muy útil en momentos de ansiedad pre-competencia.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Visualización deportiva',
+        desc: 'Imaginá la ejecución perfecta con detalle sensorial: qué ves, qué sentís en el cuerpo, el ritmo, los movimientos. 5-10 min diarios activan los mismos circuitos neurales que el movimiento real. Es entrenamiento sin mover el cuerpo.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Atención plena (Mindfulness)',
+        desc: 'La atención plena no es meditar sentado sin pensar: es entrenar la capacidad de notar lo que está pasando sin juzgarlo. Para deportistas, significa prestar atención a las sensaciones del cuerpo durante el entrenamiento, lo que mejora la técnica, el control del esfuerzo y la conexión mente-cuerpo.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'Escaneo corporal',
+        desc: 'Recorrés mentalmente el cuerpo de pies a cabeza, notando tensiones, incomodidades o sensaciones sin intentar cambiarlas. 10-15 min antes de dormir o después del entreno reduce el cortisol y mejora la calidad del sueño. Es una de las prácticas con más evidencia en recuperación mental.',
+      },
+      {
+        tipo: 'tecnica',
+        titulo: 'NSDR y Yoga Nidra',
+        desc: 'El Non-Sleep Deep Rest (NSDR) y el Yoga Nidra son protocolos de descanso que llevan al cuerpo a un estado de relajación profunda sin dormir. 20 min equivalen a un descanso de 1-2 hs. Son ideales en días de alta carga, entre sesiones dobles o cuando el sueño nocturno fue insuficiente.',
+        extra: '<strong>¿Qué es exactamente?</strong><br>El NSDR es un protocolo basado en Yoga Nidra popularizado por el neurocientífico Andrew Huberman. Lleva el cerebro a un estado de ondas theta (entre vigilia y sueño) donde ocurre recuperación cognitiva profunda sin perder conciencia.<br><br><strong>Cómo hacerlo:</strong><br>1. Acostarte en posición cómoda (no hace falta colchoneta especial)<br>2. Cerrar los ojos y relajar la mandíbula, los hombros y las manos<br>3. Seguir un audio guiado de 10-20 min (buscá "Yoga Nidra" o "NSDR" en YouTube/Spotify)<br>4. El objetivo NO es dormirte — es mantenerte en ese estado liminal<br><br><strong>Cuándo usarlo:</strong><br>→ Después de una sesión doble o entrenamiento muy intenso<br>→ Cuando dormiste menos de 6 hs la noche anterior<br>→ Entre sesión de mañana y tarde (en lugar de siesta larga)<br>→ En días de alta carga cognitiva + física<br><br><strong>Efectos comprobados:</strong><br>→ Restaura dopamina en el estriado (motivación y foco)<br>→ Reduce el cortisol de forma significativa<br>→ Mejora el rendimiento en la sesión siguiente<br>→ 20 min equivalen fisiológicamente a 1-2 hs de descanso pasivo',
+      },
+      {
+        tipo: 'tip',
+        titulo: 'Diálogo interno positivo',
+        desc: 'Reemplazá "no puedo" por "aún no puedo". El lenguaje interno impacta directamente en el rendimiento. Los atletas de élite no tienen pensamientos negativos: tienen herramientas para reconocerlos y redirigirlos rápido.',
+      },
+      {
+        tipo: 'tip',
+        titulo: 'Detectar overtraining mental',
+        desc: 'Falta de motivación persistente, irritabilidad sin causa aparente y sueño alterado son las primeras señales. Si aparecen las tres juntas por más de 5 días, es momento de reducir carga, no de esforzarse más.',
+      },
+      {
+        tipo: 'herramienta',
+        titulo: 'Diario deportivo',
+        desc: 'Registrá cómo te sentís antes y después de cada sesión. En pocas semanas podés identificar qué factores —sueño, estrés, nutrición, clima— impactan más en tu rendimiento personal.',
+      },
+      {
+        tipo: 'herramienta',
+        titulo: 'Checklist de estado mental pre-entreno',
+        desc: 'Evaluá 5 indicadores antes del entreno: motivación (1-10), calidad del sueño, nivel de estrés del día, dolor o incomodidad física y estado de ánimo general. Si tres o más están en rojo, es día de sesión suave.',
+      },
+      {
+        tipo: 'protocolo',
+        titulo: 'Rutina pre-competencia',
+        desc: 'Música conocida que te active → 5 min de box breathing → visualización de la ejecución → frase ancla personal (una sola frase que te centre). Construí este ritual con 3-4 semanas de anticipación para que sea automático el día de competencia.',
+      },
+      {
+        tipo: 'protocolo',
+        titulo: 'Protocolo de recuperación mental',
+        desc: '1. Desconectá del resultado: analizá la ejecución, no el número. 2. Hablá de lo que salió bien antes de lo que falló. 3. Escaneo corporal de 10 min. 4. Si hubo frustración intensa, esperá 24 hs antes de sacar conclusiones. 5. Escribí 3 aprendizajes concretos. La recuperación mental es tan importante como la física.',
+      },
+    ]
+  },
+  {
+    categoria: 'Rutinas',
+    esScores: true,
+    grupos: [
+      {
+        label: 'Movilidad',
+        recursos: [
+          {
+            tipo: 'rutina',
+            titulo: 'Movilidad de cadera – 10 min',
+            desc: 'La cadera es el centro de todo el movimiento. Esta rutina incluye: 90/90 en el piso (60 seg/lado) → mariposa activa (30 seg) → puente de glúteos (15 reps) → lunge con rotación de tronco (8/lado) → pigeon pose (45 seg/lado). Ideal como calentamiento de tren inferior o rutina diaria.',
+          },
+          {
+            tipo: 'rutina',
+            titulo: 'Movilidad de hombros y torácica – 10 min',
+            desc: 'Fundamental para deportes de tren superior y postura. Incluye: gato-vaca (10 reps) → rotación torácica en cuadrupedia (8/lado) → thread the needle (45 seg/lado) → apertura de pecho con foam roller (60 seg) → círculos de hombros lentos (10 reps). Se puede hacer todos los días.',
+          },
+          {
+            tipo: 'rutina',
+            titulo: 'Movilidad de tobillo y rodilla – 8 min',
+            desc: 'Crítica para corredores, ciclistas y cualquier deporte de impacto. Incluye: círculos de tobillo (15/lado) → knee to wall (10/lado, controlado) → squat profundo con talones en el piso (30 seg) → estiramiento de gemelo contra pared (45 seg/lado) → movilidad lateral de cadera en posición baja.',
+          },
+          {
+            tipo: 'rutina',
+            titulo: 'Rutina de movilidad full body – 15 min',
+            desc: 'Recorre todas las articulaciones de manera secuencial. Cuello y cervical → hombros → columna torácica → cadera → rodilla → tobillo. Perfecta para hacer al despertar o antes de entrenar. El objetivo no es estiramiento pasivo sino movimiento controlado en el rango completo.',
+          },
+          {
+            tipo: 'rutina',
+            titulo: 'Movilidad de columna y core – 10 min',
+            desc: 'Gato-vaca profundo (10 reps) → rotación de columna acostado (8/lado) → child\'s pose activa con extensión lateral (45 seg/lado) → cobra a downward dog (8 fluidas) → puente con extensión alternada de pierna (10/lado). Reduce el riesgo de lesión lumbar y mejora la transmisión de fuerza.',
+          },
+          {
+            tipo: 'rutina',
+            titulo: 'Movilidad post-carrera – 8 min',
+            desc: 'Específica para después de correr. Cuádriceps de pie (45 seg/lado) → pigeon pose (60 seg/lado) → flexor de cadera en lunge (45 seg/lado) → estiramiento de isquios con banda o sentado (45 seg/lado) → rotación interna de cadera en el piso. No saltes al frío: hacé esto mientras el músculo todavía tiene temperatura.',
+          },
+        ]
+      },
+      {
+        label: 'Cómo mejorar tus métricas',
+        recursos: [
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo subir el VO2 max',
+            desc: 'El VO2 max mejora principalmente con dos tipos de trabajo: intervalos de alta intensidad (4x4 min al 90-95% de FCmax con 3 min de pausa) y volumen aeróbico en Z2 (al menos 3 hs semanales a baja intensidad). Los primeros dan el estímulo, el segundo construye la base. Resultados visibles en 6-8 semanas de consistencia.',
+          },
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo mejorar el HRV',
+            desc: 'El HRV sube cuando el sistema nervioso parasimpático domina. Las palancas más efectivas: sueño de calidad y consistente (mismo horario), reducción del estrés crónico, entrenamiento en Z2 (no todo a alta intensidad), respiración lenta diaria (5-6 respiraciones/min por 10 min) y alcohol cero. Mejoras sostenidas en 3-4 semanas.',
+          },
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo bajar la frecuencia cardíaca en reposo (RHR)',
+            desc: 'La RHR baja con adaptación aeróbica progresiva. Claves: al menos 150 min semanales de ejercicio aeróbico moderado, priorizar el sueño (cada hora menos de sueño sube la RHR), reducir el consumo de cafeína en la tarde y gestionar el estrés. Una RHR que sube de repente es señal de enfermedad o sobreentrenamiento.',
+          },
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo mejorar el Recovery Score',
+            desc: 'El Recovery Score responde a tres variables: sueño (calidad + duración), carga acumulada (no entrenar demasiado seguido) y estado del sistema nervioso (HRV). Para mejorar el score de mañana: dormí 8 hs, evitá alcohol, hacé una sesión suave o descansá si el score es bajo, y gestioná el estrés del día.',
+          },
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo mejorar el Readiness',
+            desc: 'El Readiness es el score más accionable del día. Para maximizarlo: mantené un horario de sueño consistente (el factor más impactante), no acumulés más de 2 días intensos seguidos, hidratate bien, y revisá tu Wellness Score subjetivo — si tu cuerpo dice que no está listo, el Readiness lo va a reflejar.',
+          },
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo mejorar el Wellness Score',
+            desc: 'El Wellness Score mejora cuando los cuatro pilares están alineados: sueño reparador, nutrición adecuada, carga de entrenamiento sostenible y bienestar mental. No es un score que se "entrena" directamente — es el resultado de todo lo demás funcionando bien. Si está bajo de forma persistente, algo en alguno de los cuatro pilares está fallando.',
+          },
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo mejorar la Calidad de sueño',
+            desc: 'La calidad del sueño (no solo la duración) se mejora con: temperatura del cuarto entre 18-20°C, oscuridad total, sin pantallas 45 min antes de dormir, sin alcohol (fragmenta el sueño profundo), cena liviana y temprana, y una rutina de cierre consistente. El sueño profundo aparece en las primeras horas: no te vayas tarde a la cama.',
+          },
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo reducir el Estrés de sueño',
+            desc: 'Un estrés de sueño alto indica que tu sistema nervioso no se desconectó durante la noche. Las causas más comunes: alcohol, cena pesada, estrés mental no procesado, temperatura alta del cuarto o entrenar muy tarde. La solución: escaneo corporal o respiración lenta antes de dormir, y eliminar los factores externos uno a uno.',
+          },
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo gestionar la Carga Aguda',
+            desc: 'La carga aguda ideal es la que permite adaptación sin generar fatiga acumulada. Regla del 10%: no aumentes el volumen total más de un 10% por semana. Alternará semanas de carga con semanas de descarga cada 3-4 semanas. Un ratio de carga aguda/crónica entre 0.8 y 1.3 es la zona segura de entrenamiento.',
+          },
+          {
+            tipo: 'como-mejorar',
+            titulo: 'Cómo mejorar el Performance Score',
+            desc: 'El Performance Score sube cuando hay adaptación real: progresión de carga controlada + recuperación suficiente + nutrición adecuada. No se puede forzar a corto plazo. La trampa más común: entrenar más cuando el score baja, cuando en realidad lo que necesitás es recuperar. La consistencia de semanas gana a los picos de días.',
+          },
+        ]
+      },
+    ]
+  },
+  {
+    categoria: 'Performr',
+    esScores: true,
+    grupos: [
+      {
+        label: 'Scores principales',
+        recursos: [
+          {
+            tipo: 'score',
+            titulo: 'Calidad del día',
+            desc: 'Tu evaluación global del día. Integra bienestar, rendimiento y recuperación en un único número para ver tendencias a lo largo del tiempo.',
+            zonas: [
+              { color: 'green', label: 'Gran día — 90-100', texto: 'Excelente día para entrenar fuerte o enfrentar retos exigentes. Todos los sistemas en verde — aprovechalo para trabajo de calidad, marcas personales o sesiones técnicamente complejas.', ejercicios: ['Sesión principal a máxima calidad', 'Trabajo técnico que requiera concentración', 'Intervalos o esfuerzos de alta intensidad', 'Test de rendimiento si corresponde'] },
+              { color: 'green', label: 'Buen día — 70-89', texto: 'Buen día. Podés entrenar con intensidad normal sin restricciones. No es el pico, pero estás en condiciones óptimas para una sesión completa.', ejercicios: ['Plan de entrenamiento normal', 'Volumen completo según programa', 'Incluir trabajo de umbral si corresponde'] },
+              { color: 'yellow', label: 'Día normal — 50-69', texto: 'Día normal. Moderá la intensidad y escuchá cómo te sentís durante la sesión. Si lleva varios días seguidos en esta zona, chequeá sueño y estrés — suelen ser la causa.', ejercicios: ['Reducir intensidad un 10-15%', 'Mantener el volumen pero sin forzar zonas altas', 'Movilidad y trabajo de base aeróbica'] },
+              { color: 'red', label: 'Día difícil — 0-49', texto: 'Tu cuerpo está bajo presión. Sesión muy ligera o descanso activo. Identificá la causa principal (sueño, estrés, carga acumulada) y priorizá la recuperación sobre el entrenamiento.', ejercicios: ['Caminata suave 20-30 min zona 1', 'Movilidad articular 10-15 min', 'Respiración diafragmática 5 min', 'Descanso activo si la causa es sistémica'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'Recovery Score',
+            desc: 'Mide qué tan recuperado está tu cuerpo respecto al esfuerzo acumulado. Se calcula con HRV, sueño y carga reciente. Determinante para decidir la intensidad del día.',
+            zonas: [
+              { color: 'green', label: 'Óptimo — 70-100', texto: 'Recuperación fisiológica completa. HRV, sueño y estrés acompañan — día ideal para una sesión de calidad. El cuerpo absorbió el trabajo previo y está listo para nuevo estímulo.', ejercicios: ['Sesión de alta intensidad o competencia', 'Intervalos en Z4-Z5', 'Trabajo de fuerza máxima o potencia', 'Entrenamiento técnico que requiera frescura neurológica'] },
+              { color: 'yellow', label: 'Moderado — 50-69', texto: 'Recuperación aceptable. Podés entrenar pero prestá atención a cómo responde el cuerpo. Mantene el volumen sin forzar la intensidad máxima.', ejercicios: ['Entrenamiento normal al 80-85% de intensidad', 'Evitar esfuerzos máximos o series al fallo', 'Trabajo aeróbico en Z2-Z3', 'Foam rolling y movilidad post-sesión'] },
+              { color: 'red', label: 'Deficiente — 0-49', texto: 'Tu cuerpo no se recuperó bien. Sesión muy suave o descanso activo hoy. Forzar entrenamiento intenso sobre una recuperación deficiente solo acumula más deuda fisiológica.', ejercicios: ['Caminata suave 20-30 min', 'Yoga restaurativo o stretching suave 15 min', 'Respiración lenta 4-6-8 durante 10 min', 'Foam rolling de grupos principales 10 min', 'Siesta de 20 min si hay déficit de sueño'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'Wellness Score',
+            desc: 'Refleja tu estado general de bienestar: humor, energía, motivación y señales físicas. Es el termómetro subjetivo más honesto de cómo estás realmente.',
+            zonas: [
+              { color: 'green', label: 'Óptimo — 70-100', texto: 'Bienestar general en zona óptima. HRV, sueño y estrés están alineados. Momento ideal para exigirte — el cuerpo y la mente están en sintonía.', ejercicios: ['Aprovechá para trabajo de calidad', 'Incorporar sesiones técnicamente demandantes', 'Objetivo ambicioso de la semana para hoy'] },
+              { color: 'yellow', label: 'Moderado — 50-79', texto: 'Bienestar en zona moderada. El cuerpo es más vulnerable al estrés o cansancio acumulado. Mantené el volumen pero no lo aumentes — no es momento de empujar.', ejercicios: ['Volumen normal, intensidad controlada', 'Priorizar sueño esta noche', 'Técnicas de recuperación mental: box breathing, escaneo corporal', 'Checklist de bienestar antes del entreno'] },
+              { color: 'red', label: 'Deficiente — 0-39', texto: 'Bienestar general bajo. Antes de cualquier decisión de carga, priorizá recuperación: sueño, hidratación, manejo del estrés. El entrenamiento intenso sobre bienestar deficiente genera más daño que beneficio.', ejercicios: ['Descanso activo o sesión muy suave', 'Escaneo corporal 10-15 min', 'NSDR o Yoga Nidra 20 min', 'Respiración 4-7-8 antes de dormir', 'Sin pantallas 60 min antes de acostarse'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'Performance Score',
+            desc: 'Evalúa tu capacidad de rendimiento actual. Combina métricas de carga, adaptación y recuperación para estimar cuánto tenés disponible hoy.',
+            zonas: [
+              { color: 'green', label: 'Óptimo — 70-100', texto: 'Rendimiento en su mejor punto reciente. Estás construyendo bien — podés aumentar la carga gradualmente si tus objetivos lo requieren. Es el resultado de semanas de constancia y buena recuperación.', ejercicios: ['Aumentar carga gradual (máx 10% volumen)', 'Incorporar un estímulo nuevo si el plan lo permite', 'Test de rendimiento o marca personal', 'Trabajo de alta especificidad deportiva'] },
+              { color: 'yellow', label: 'Moderado — 50-79', texto: 'Estás construyendo pero aún no en pico de forma. Mantené la constancia — los resultados llegan en las próximas semanas. No es momento de cambiar el plan, sino de ejecutarlo.', ejercicios: ['Mantener la estructura del plan actual', 'Foco en consistencia, no en intensidad', 'Trabajo en zonas aeróbicas (Z2-Z3)', 'Registrar RPE diario para ver tendencia'] },
+              { color: 'red', label: 'Deficiente — 0-39', texto: 'Rendimiento bajo. Puede ser una fase de carga pesada normal o falta de constancia reciente. Revisá la tendencia de las últimas 4 semanas antes de tomar decisiones de carga.', ejercicios: ['Revisar la constancia de las últimas 4 semanas', 'Semana de descarga si hay carga acumulada', 'Foco en hábitos de recuperación: sueño + nutrición', 'Sesiones cortas y de calidad hasta recuperar tendencia'] },
+            ]
+          },
+        ]
+      },
+      {
+        label: 'Estado físico y mental',
+        recursos: [
+          {
+            tipo: 'score',
+            titulo: 'Estado Mental',
+            desc: 'Cómo está tu cabeza hoy. Incluye concentración, motivación y niveles de estrés percibido. Un estado mental bajo puede predecir bajo rendimiento incluso con buen estado físico.',
+            zonas: [
+              { color: 'green', label: 'Óptimo — >80%', texto: 'Tu estado mental está en zona óptima. La motivación y el foco están a favor — buen día para entrenamientos técnicamente exigentes, aprender movimientos nuevos o enfrentar retos que requieran concentración sostenida.', ejercicios: ['Trabajo técnico complejo (técnica de carrera, nado, levantamiento)', 'Sesión de alta concentración o estrategia', 'Buena jornada para fijar nuevos hábitos de entrenamiento', 'Aprovechá para practicar visualización deportiva'] },
+              { color: 'yellow', label: 'Estable — 50-79%', texto: 'Estado mental estable. Podés entrenar con normalidad. Si tenés estrés laboral o personal, puede afectar la percepción del esfuerzo — el mismo entrenamiento se va a sentir más duro de lo habitual.', ejercicios: ['Plan de entrenamiento normal sin variaciones', 'Música que te active para mejorar el estado', 'Respiración 4-4-4 antes de arrancar', 'Sesión conocida, sin ejercicios nuevos complejos'] },
+              { color: 'orange', label: 'Alerta — 30-49%', texto: 'Tu estado mental está en zona de alerta. El entrenamiento puede sentirse más pesado de lo habitual. Bajá las expectativas de rendimiento hoy — no es el día para marcas personales ni esfuerzos máximos.', ejercicios: ['Reducir la intensidad un 15-20%', 'Box breathing antes de la sesión (4 rondas)', 'Sesión corta y conocida — sin decisiones complejas', 'Grounding 5-4-3-2-1 si hay ansiedad o dispersión'] },
+              { color: 'red', label: 'Crítico — <29%', texto: 'Estado mental crítico. Forzar un entreno intenso cuando la mente está al límite puede aumentar el riesgo de lesión y desmotivación. El sistema nervioso no distingue entre estrés mental y físico — hoy sumás carga aunque no entrenes fuerte.', ejercicios: ['Sesión suave o descanso activo — sin negociación', 'NSDR o Yoga Nidra 20 min', 'Caminata en exterior 20-30 min (reduce cortisol)', 'Escaneo corporal 10 min antes de dormir', 'Escribir 3 cosas concretas que podés controlar hoy'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'Estado Físico',
+            desc: 'Percepción de tu disposición física: fuerza, energía muscular, dolor o incomodidad. Complementa las métricas objetivas con la señal más directa: lo que siente tu cuerpo.',
+            zonas: [
+              { color: 'green', label: 'Pico de forma — >80%', texto: 'Estás en tu mejor forma reciente. Es el momento para objetivos exigentes — el cuerpo tiene la base construida y la frescura necesaria. No dejes pasar días así sin sacarles provecho.', ejercicios: ['Sesión más ambiciosa de la semana', 'Test de rendimiento o marca personal', 'Trabajo de alta especificidad deportiva', 'Podés aumentar carga un 5-10% respecto a lo habitual'] },
+              { color: 'green', label: 'Estable / Fitness sólido — 50-79%', texto: 'Tu forma está construyéndose bien. Mantené la constancia — el progreso sostenido en esta zona es lo que genera adaptaciones reales a largo plazo.', ejercicios: ['Estructura del plan actual sin cambios', 'Foco en la ejecución técnica', 'Volumen completo según programa', 'Incluir trabajo de umbral si el plan lo prevé'] },
+              { color: 'yellow', label: 'Carga fuerte — 30-49%', texto: 'Estás en fase de carga. Es normal sentirse cansado — la forma llega después del descanso, no durante el esfuerzo. El cuerpo está absorbiendo el trabajo acumulado.', ejercicios: ['Mantener la sesión pero reducir intensidad', 'Priorizar la técnica sobre el rendimiento', 'Foam rolling y movilidad post-sesión obligatorios', 'Sueño de 8 hs esta noche como prioridad #1'] },
+              { color: 'red', label: 'Sobrecarga — <29%', texto: 'Tu forma base es baja. Focalizate en la constancia antes de pensar en aumentar la intensidad. Sin base aeróbica y de fuerza, más carga solo genera más riesgo de lesión.', ejercicios: ['3-4 sesiones semanales de volumen moderado como objetivo', 'Sin aumentar intensidad hasta tener 3 semanas consistentes', 'Movilidad diaria como hábito base', 'Revisá sueño, nutrición y estrés — suelen ser la causa raíz'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'Gestión de la Carga',
+            desc: 'Evalúa si estás entrenando de manera sostenible. Compara la carga que aplicás con la que tu cuerpo puede absorber. El rango óptimo (ACWR 0.8-1.3) minimiza el riesgo de lesión y maximiza la adaptación.',
+            zonas: [
+              { color: 'green', label: 'Zona óptima — ACWR 0.8 a 1.3', texto: 'Tu carga de entrenamiento está equilibrada. La carga aguda es proporcional a tu carga crónica — bajo riesgo de lesión y condiciones ideales para progresar. Podés mantener o aumentar levemente.', ejercicios: ['Mantener o aumentar volumen un 5-10%', 'Podés sumar una sesión extra si te sentís bien', 'Seguir con el plan sin cambios'] },
+              { color: 'yellow', label: 'Alerta — ACWR 1.31 a 1.5', texto: 'La semana fue más intensa de lo habitual. Monitorea cómo te sentís — puede ser momento de bajar un cambio. La carga aguda superó a la crónica y el riesgo de lesión empieza a subir.', ejercicios: ['Reducir volumen los próximos 2 días', 'Sin sesiones adicionales esta semana', 'Priorizar recuperación: sueño + nutrición + foam rolling', 'Monitorear HRV diariamente hasta que el ratio baje'] },
+              { color: 'red', label: 'Riesgo crítico — ACWR >1.5', texto: 'Tu cuerpo pide recuperación — es parte del proceso. Con ACWR por encima de 1.5, el riesgo de lesión por sobreuso se duplica. Hoy y mañana son de descanso sin excepción.', ejercicios: ['Descanso activo hoy y mañana — sin negociación', 'Caminata suave máximo 30 min', 'Foam rolling y movilidad suave', 'Revisar el plan de la semana siguiente para evitar repetir el pico'] },
+              { color: 'yellow', label: 'Desacondicionamiento — ACWR <0.8', texto: 'Entrenaste menos de lo habitual para tu nivel. Podés aumentar gradualmente la carga esta semana — tu cuerpo tiene capacidad absorbida que no estás usando.', ejercicios: ['Aumentar volumen un 10-15% esta semana', 'Agregar una sesión extra si el tiempo lo permite', 'Buena semana para retomar intensidad con base sólida'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'Carga Aguda',
+            desc: 'La carga de entrenamiento de los últimos 7 días (ATL). Refleja cuánto estrés físico acumulaste recientemente. Alta carga aguda sin recuperación adecuada es la principal causa de lesiones por sobreuso.',
+            zonas: [
+              { color: 'green', label: 'Carga efectiva — 50-79%', texto: 'Estás entrenando bien. La carga es adecuada para construir forma sin comprometer la recuperación. Es la zona donde el cuerpo construye fitness sin sobreentrenarse.', ejercicios: ['Mantener el ritmo actual', 'Asegurar sueño de calidad para absorber la carga', 'Sesión de recuperación activa cada 3-4 días'] },
+              { color: 'yellow', label: 'Carga muy alta / máxima — 80-100%', texto: 'La carga de la semana es alta. Asegurate de dormir bien y descansar lo suficiente — la recuperación de esta semana va a definir cuánta forma construís. Semana de pico bien gestionada puede ser muy productiva.', ejercicios: ['Sueño 8-9 hs como prioridad absoluta', 'Nutrición post-entreno sin saltear', 'Foam rolling diario obligatorio', 'Sin entrenamientos adicionales espontáneos'] },
+              { color: 'red', label: 'Carga baja — <49%', texto: 'La carga es baja esta semana. Puede ser intencional (semana de descarga) o una señal de que hay que aumentar el estímulo. Tu cuerpo puede estar perdiendo adaptación si se sostiene en el tiempo.', ejercicios: ['Agregar una sesión extra de volumen moderado', 'Buen momento para trabajo técnico de baja intensidad', 'Si es deload planificado: mantener y revisar plan de la semana siguiente'] },
+            ]
+          },
+        ]
+      },
+      {
+        label: 'Métricas fisiológicas',
+        recursos: [
+          {
+            tipo: 'score',
+            titulo: 'Readiness',
+            desc: 'Tu preparación global para entrenar hoy. Integra sueño, HRV, carga acumulada y bienestar subjetivo. Es el número más útil para tomar decisiones de entrenamiento día a día.',
+            zonas: [
+              { color: 'green', label: 'Pico de frescura — 80-100%', texto: 'Estás en una gran forma física: momento ideal para sesiones exigentes, competencias o tests de rendimiento. Tu cuerpo está descansado y tiene la forma construida — no dejes pasar este estado.', ejercicios: ['Sesión más exigente de la semana para hoy', 'Test de rendimiento o competencia', 'Trabajo de alta intensidad: intervalos al 90-95%', 'Aprovechá la frescura neurológica para trabajo técnico fino'] },
+              { color: 'green', label: 'Fresco — 50 a 79%', texto: 'Balance equilibrado entre carga y frescura. Podés asimilar efectivamente la carga de hoy. Es la zona donde se produce la mayor parte de la adaptación real.', ejercicios: ['Plan de entrenamiento completo sin restricciones', 'Trabajo de umbral o zona 4', 'Podés incluir el trabajo más exigente de la semana'] },
+              { color: 'yellow', label: 'Carga Fuerte — 30 a 49%', texto: 'El cuerpo está asimilando el trabajo. Cargando bien — respetá los días de recuperación planificados. El TSB bajo significa que estás acumulando forma; el descanso que viene la va a convertir en rendimiento.', ejercicios: ['Moderá la intensidad un 10-15%', 'Foam rolling y stretching post-sesión obligatorios', 'Priorizar el sueño esta noche', 'Sin sesiones adicionales espontáneas'] },
+              { color: 'red', label: 'Sobrecarga — <29%', texto: 'Fatiga acumulada significativa: bajá el ritmo. Si además hay estrés alto, priorizar el descanso es innegociable. El cuerpo no tiene frescura para rendir — forzarlo solo profundiza el daño.', ejercicios: ['Descanso activo: caminata suave 20-30 min', 'NSDR o Yoga Nidra 20 min', 'Revisá la carga de las últimas 2 semanas', 'Sueño 8-9 hs los próximos 3 días como prioridad #1'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'VO2 Score',
+            desc: 'Estimación de tu capacidad aeróbica máxima (VO2 max). Es uno de los mejores predictores de salud cardiovascular y longevidad, además del rendimiento de resistencia.',
+            zonas: [
+              { color: 'green', label: 'Óptimo — 80-100', texto: 'Tu capacidad aeróbica está en zona óptima. El trabajo de resistencia de las últimas semanas está dando resultados. Un VO2 max alto te permite sostener esfuerzos más intensos por más tiempo y recuperarte más rápido entre series.', ejercicios: ['Mantener 2-3 sesiones semanales de Z2 como base', 'Incluir 1 sesión de intervalos 4x4 min al 90-95% FCmax', 'Testear rendimiento en distancias objetivo', 'Buena semana para trabajo de especificidad deportiva'] },
+              { color: 'yellow', label: 'Moderado — 50-79', texto: 'Tu VO2 Max está en zona moderada. Para mejorarlo, incorporá 1-2 sesiones semanales de trabajo en zona 2 de forma consistente — es el estímulo más efectivo para elevar la capacidad aeróbica base.', ejercicios: ['2-3 sesiones/semana de Z2: 45-60 min a ritmo conversacional', '1 sesión semanal de intervalos cortos (6-8 x 1 min al 95%)', 'Consistencia de 6-8 semanas antes de ver mejoras significativas', 'Evitar quedarse siempre en Z3 — la "zona gris" no mejora el VO2'] },
+              { color: 'red', label: 'Deficiente — 0-49', texto: 'Tu capacidad aeróbica bajó. Puede ser por reducción de volumen, sobreentrenamiento o falta de constancia. Revisá la tendencia de las últimas 4 semanas — el VO2 max no baja de un día para el otro.', ejercicios: ['Priorizar consistencia: 3-4 sesiones semanales mínimo', 'Empezar con Z2 largo como base (30-45 min)', 'Sin aumentar intensidad hasta tener 3-4 semanas de base', 'Revisá sueño y nutrición — impactan directamente la adaptación aeróbica'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'HRV Score',
+            desc: 'La variabilidad de la frecuencia cardíaca mide la capacidad de tu sistema nervioso autónomo para adaptarse al estrés. Valores altos = mejor recuperación. Caídas sostenidas indican fatiga acumulada.',
+            zonas: [
+              { color: 'green', label: 'Óptimo — 75-100%', texto: 'HRV en la zona alta de tu historial. Sistema nervioso en excelente estado — el cuerpo está listo para absorber nueva carga. Una de las mejores señales de recuperación que podés tener.', ejercicios: ['Día ideal para intensidad alta', 'Podés sumar volumen o una sesión extra', 'Aprovechá para trabajo de alta demanda neuromuscular (fuerza, potencia)'] },
+              { color: 'yellow', label: 'Moderado — 45-74%', texto: 'HRV en rango normal. Sin alarmas, pero tampoco en el mejor punto. Podés entrenar con normalidad prestando atención a cómo responde el cuerpo durante la sesión.', ejercicios: ['Entrenamiento normal sin modificaciones', 'Foam rolling post-sesión como mantenimiento', 'Respiración lenta 5 min antes de dormir'] },
+              { color: 'red', label: 'Deficiente — 0-44%', texto: 'HRV en la zona baja de tu historial. El sistema nervioso muestra fatiga — priorizá recuperación y evitá cargas altas. Forzar entrenamiento intenso con HRV bajo solo profundiza el daño.', ejercicios: ['Sesión suave o descanso activo', 'NSDR 20 min para recuperar el sistema nervioso', 'Sin cafeína después de las 13 hs', 'Temperatura del cuarto 18-20°C esta noche', 'Sueño 8-9 hs como prioridad #1'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'RHR Score',
+            desc: 'Tu frecuencia cardíaca en reposo. Valores crónicamente elevados indican fatiga, estrés o inicio de enfermedad. Junto al HRV, es la señal más temprana de que algo no está bien.',
+            zonas: [
+              { color: 'green', label: 'Óptimo — 75-100%', texto: 'FC en reposo en su mejor punto. Excelente recuperación cardiovascular — el corazón está trabajando con eficiencia. Sin signos de estrés metabólico ni cardiovascular.', ejercicios: ['Sin modificaciones al plan de entrenamiento', 'Día ideal para entrenamiento normal o exigente', 'Todo en orden — seguir con el plan'] },
+              { color: 'yellow', label: 'Moderado — 45-74%', texto: 'FC en reposo en rango normal. Sin alertas. Podés entrenar con normalidad, aunque vale monitorear si la tendencia cambia en los próximos días.', ejercicios: ['Entrenamiento normal sin modificaciones', 'Priorizar hidratación y sueño esta noche', 'Monitorear la tendencia los próximos días'] },
+              { color: 'red', label: 'Deficiente — 0-44%', texto: 'FC en reposo elevada respecto a tu historial. Señal clara de fatiga, estrés elevado o inicio de enfermedad. Revisá sueño, hidratación y niveles de estrés de los últimos días.', ejercicios: ['Sesión muy suave o descanso activo', 'Si hay síntomas de enfermedad: descanso completo', 'Revisá las últimas 72 hs: alcohol, sueño malo, carga alta', 'No entrenes fuerte hasta que la RHR vuelva al rango normal'] },
+            ]
+          },
+        ]
+      },
+      {
+        label: 'Sueño',
+        recursos: [
+          {
+            tipo: 'score',
+            titulo: 'Calidad de sueño',
+            desc: 'No es solo cuánto dormís sino cómo. Evalúa la distribución de fases (especialmente sueño profundo y REM), la cantidad de despertares y la eficiencia general de la noche.',
+            zonas: [
+              { color: 'green', label: 'Excelente — 90-100', texto: 'Dormiste excelente. Tu cuerpo tuvo todo lo que necesitaba para recuperarse. El sueño profundo reparó el tejido muscular y el REM consolidó el aprendizaje motor. Tu Readiness lo va a reflejar.', ejercicios: ['Aprovechá para entrenamiento de calidad hoy', 'Registrá qué hiciste bien ayer — es info valiosa para replicar', 'Buena noche para mantener como referencia en tu diario de sueño'] },
+              { color: 'green', label: 'Bueno — 70-89', texto: 'Buena noche. La recuperación del sueño es adecuada. No es el pico, pero el cuerpo tuvo suficiente descanso para rendir con normalidad.', ejercicios: ['Entrenamiento normal sin modificaciones', 'Seguir con la rutina de higiene de sueño que venías haciendo'] },
+              { color: 'yellow', label: 'Regular — 50-69', texto: 'Sueño moderado. Tu recuperación puede estar limitada — prestá atención a cómo te sentís durante el entreno, especialmente en los primeros 20 min. Si lleva varios días, la causa más común es estrés o temperatura del cuarto.', ejercicios: ['Reducir intensidad un 10% como precaución', 'Checklist de higiene de sueño esta noche', 'Temperatura cuarto 18-20°C, sin pantallas 60 min antes', 'Evitar cafeína después de las 14 hs'] },
+              { color: 'red', label: 'Deficiente — 0-49', texto: 'Mala noche. El sueño no ayudó a la recuperación. Una noche de sueño deficiente reduce la fuerza hasta un 20% y la resistencia hasta un 11%. Bajá la intensidad hoy.', ejercicios: ['Sesión suave o descanso activo', 'Siesta de 20 min antes de las 15 hs si es posible', 'Sin entrenamiento intenso — el riesgo de lesión sube con sueño malo', 'Esta noche: mismo horario, cuarto frío, sin alcohol'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'Duración de sueño',
+            desc: 'Las horas totales de sueño de la noche. El mínimo para la mayoría de los atletas es 7 hs; entre 8-9 hs se asocia con mejor recuperación, menos lesiones y mayor rendimiento cognitivo.',
+            zonas: [
+              { color: 'green', label: 'Excelente — >8 hs', texto: 'Dormiste lo suficiente y más. Tu cuerpo tuvo tiempo para completar los ciclos de sueño profundo y REM que necesita. Esto potencia tu recuperación y se refleja en el Readiness de hoy.', ejercicios: ['Aprovechá el Readiness alto para entrenamiento de calidad', 'Buen día para sesión técnica o exigente'] },
+              { color: 'green', label: 'Bueno — 7-8 hs', texto: 'Dormiste lo suficiente. Tu cuerpo tuvo tiempo para recuperarse. La mayoría de los atletas amateur rinden bien con 7-8 hs consistentes.', ejercicios: ['Entrenamiento normal sin modificaciones', 'Mantener el horario de sueño que venís sosteniendo'] },
+              { color: 'yellow', label: 'Regular — 6-7 hs', texto: 'Dormiste poco. Puede afectar tu energía y concentración durante el entreno. Una noche no es crítica, pero si se repite varios días, el impacto acumulativo es significativo.', ejercicios: ['Siesta de 20 min si podés (antes de las 15 hs)', 'Moderá la intensidad de la sesión', 'Esta noche: acostarse 30-45 min antes', 'Sin cafeína después de las 13 hs para no comprometer la noche'] },
+              { color: 'red', label: 'Pobre — <6 hs', texto: 'Menos de 6 horas es poco para recuperarse. El rendimiento, la fuerza y la toma de decisiones están comprometidos. Considerá sesión muy suave o descanso, y priorizá la noche de hoy sobre cualquier otra variable.', ejercicios: ['Sesión muy suave o descanso activo', 'Siesta 20 min antes de las 15 hs si es posible', 'Esta noche es prioridad #1: misma hora, cuarto frío y oscuro', 'Evitar compensar con cafeína — enmascara la fatiga sin resolverla'] },
+            ]
+          },
+          {
+            tipo: 'score',
+            titulo: 'Estrés de sueño',
+            desc: 'Mide cuánto estrés fisiológico experimentó tu cuerpo durante la noche. Un valor alto significa que tu sistema nervioso no pudo desconectarse, comprometiendo la recuperación aunque hayas dormido muchas horas.',
+            zonas: [
+              { color: 'green', label: 'Excelente', texto: 'Excelente nivel de reposo nocturno. Tu sistema nervioso se desconectó durante la noche — deberías empezar el día con energía física y mental. Lo que estás haciendo antes de dormir está funcionando.', ejercicios: ['Sin cambios — mantener los hábitos actuales', 'Buen día para entrenamiento normal o exigente'] },
+              { color: 'yellow', label: 'Bueno', texto: 'Estás logrando un buen estado de reposo al dormir, aunque con algo de activación. Puede haber momentos de ligera activación sin afectar la recuperación general. Intentá despejarte un poco más por las noches.', ejercicios: ['Evitar comidas pesadas 90 min antes de dormir', 'Sin actividad física intensa cerca de la hora de dormir', 'Rutina de cierre del día más cuidadosa esta noche'] },
+              { color: 'orange', label: 'Regular', texto: 'No estás logrando bajar el estrés de noche — tu mente sigue activa al dormir. Puede estar afectando la calidad del sueño y tu recuperación general. Creá una rutina de cierre más estructurada.', ejercicios: ['Lectura, respiración o meditación guiada antes de dormir', 'Sin pantallas al menos 1 hora antes de acostarte', 'No entrenar intensamente cerca de la hora de dormir', 'Probar audios de meditación o sonidos suaves'] },
+              { color: 'red', label: 'Pobre', texto: 'Tu estrés siguió alto durante la noche — recuperación deficiente con posible impacto en el rendimiento. Es imprescindible lograr mayor relajación nocturna. Establecé una rutina de relajación activa.', ejercicios: ['Respiración 4-7-8 o escaneo corporal obligatorio esta noche', 'Sin pantallas ni luz azul 1 hs antes de dormir', 'Temperatura del cuarto: 18-20°C', 'Evaluar consumo de cafeína o alcohol', 'Escribir lo pendiente antes de dormir (vacía la mente)'] },
+            ]
+          },
+        ]
+      },
+    ]
+  },
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let activeTab = 'Recuperación';
+let activeType = 'all';
+let LOADED_DATA = null;
+
+// ─── RENDER TABS ─────────────────────────────────────────────────────────────
+function renderTabs() {
+  const tabsEl = document.getElementById('tabs');
+  const allCats = LOADED_DATA.map(d => d.categoria);
+  tabsEl.innerHTML = allCats.map(cat => {
+    const section = LOADED_DATA.find(d => d.categoria === cat);
+    const count = section.esScores
+      ? section.grupos.reduce((a, g) => a + g.recursos.length, 0)
+      : section.recursos.length;
+    const color = CAT_COLORS[cat] || '#888';
+    return `<button class="tab-btn ${cat === activeTab ? 'active' : ''}" onclick="setTab('${cat}')">
+      <span class="tab-dot" style="background:${color};"></span>
+      ${cat}
+      <span class="tab-count">${count}</span>
+    </button>`;
+  }).join('');
+}
+
+function setTab(cat) {
+  activeTab = cat;
+  activeType = 'all';
+  renderTabs();
+  renderAll();
+}
+
+// ─── TYPE FILTERS ─────────────────────────────────────────────────────────────
+function getTypesForTab() {
+  const section = LOADED_DATA.find(d => d.categoria === activeTab);
+  if (!section) return [];
+  const recursos = section.esScores
+    ? section.grupos.flatMap(g => g.recursos)
+    : section.recursos;
+  const types = [...new Set(recursos.map(r => r.tipo))];
+  return types;
+}
+
+// Todos los tipos disponibles — siempre visibles en todas las pestañas
+const ALL_TYPES = ['tip','tecnica','protocolo','herramienta','guia','rutina','como-mejorar','score','calculadora','mito'];
+
+function renderTypeFilters() {
+  return `<div class="type-filters">
+    <span class="type-filters-label">Filtrar:</span>
+    <button class="type-filter-btn ${activeType === 'all' ? 'active' : ''}" onclick="setType('all')">Todos</button>
+    ${ALL_TYPES.map(t => `<button class="type-filter-btn ${activeType === t ? 'active' : ''}" onclick="setType('${t}')">${TIPOS[t]?.label || t}</button>`).join('')}
+  </div>`;
+}
+
+function setType(t) {
+  activeType = t;
+  renderAll();
+}
+
+// ─── CARD & MODAL ────────────────────────────────────────────────────────────
+const CARD_REG = {};
+
+function cardHTML(r, cat) {
+  const tipo = normalizeTipo(r.tipo);
+  const t = TIPOS[tipo] || { label: r.tipo, textVar: '#444', bgVar: '#eee' };
+  const dot = CAT_COLORS[cat] || '#888';
+  const id = 'c_' + Math.random().toString(36).slice(2);
+  CARD_REG[id] = { r, cat };
+  const hasMore = r.extra || r.zonas || r.video || r.imagen;
+  const titulo = r.titulo || '—';
+  const desc = r.desc || '';
+  return `<div class="card ${tipo === 'score' ? 'score-card' : ''}" onclick="openModal('${id}')">
+    <div class="card-header">
+      <span class="card-badge" style="color:${t.textVar};background:${t.bgVar};">${t.label}</span>
+    </div>
+    <div class="card-title">${titulo}</div>
+    <div class="card-desc">${desc}</div>
+    <div class="card-footer">
+      <span class="card-cat-tag">
+        <span class="card-cat-dot" style="background:${dot};"></span>
+        ${cat}
+      </span>
+      ${hasMore ? '<span class="card-more">Ver más →</span>' : ''}
+    </div>
+  </div>`;
+}
+
+function openModal(id) {
+  const { r } = CARD_REG[id];
+  const tipo = normalizeTipo(r.tipo);
+  const t = TIPOS[tipo] || { label: r.tipo, textVar: '#444', bgVar: '#eee' };
+
+  let html = `<span class="modal-badge" style="color:${t.textVar};background:${t.bgVar};">${t.label}</span>
+    <div class="modal-title">${r.titulo}</div>
+    <div class="modal-desc">${r.desc}</div>`;
+
+  // Imagen
+  if (r.imagen) {
+    html += `<img class="modal-img" src="${r.imagen}" alt="${r.titulo}" onerror="this.style.display='none'" />`;
+  }
+
+  // Video YouTube — acepta link completo o solo el ID
+  if (r.video) {
+    const ytMatch = r.video.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&\s]+)/);
+    const ytId = ytMatch ? ytMatch[1] : (r.video.length < 20 ? r.video : null);
+    if (ytId) html += `<div class="modal-video"><iframe src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe></div>`;
+  }
+
+  if (r.extra) html += `<hr class="modal-divider"><div class="modal-extra">${r.extra.replace(/\n/g,'<br>')}</div>`;
+
+  if (r.zonas && r.zonas.length) {
+    html += `<hr class="modal-divider"><div class="modal-zonas-label">Recomendaciones por zona</div><div class="modal-zonas">`;
+    r.zonas.forEach(z => {
+      html += `<div class="modal-zona zona-${z.color}"><div class="zona-label">${z.label}</div><div class="zona-texto">${z.texto}</div>`;
+      if (z.ejercicios && z.ejercicios.length) html += `<ul class="zona-ejercicios">${z.ejercicios.map(e => `<li>${e}</li>`).join('')}</ul>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function maybeCloseModal(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─── MAIN RENDER ─────────────────────────────────────────────────────────────
+function renderAll() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const section = DATA.find(d => d.categoria === activeTab);
+  if (!section) return;
+
+  let html = renderTypeFilters();
+
+  if (section.esScores) {
+    // Performr tab: grouped layout
+    let totalVisible = 0;
+    section.grupos.forEach(grupo => {
+      let recursos = grupo.recursos.filter(r => {
+        const matchType = activeType === 'all' || normalizeTipo(r.tipo) === activeType;
+        const matchQ = !q || r.titulo.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q);
+        return matchType && matchQ;
+      });
+      if (!recursos.length) return;
+      totalVisible += recursos.length;
+      html += `<div class="section-label">${grupo.label}</div>`;
+      html += `<div class="cards-grid">${recursos.map(r => cardHTML(r, activeTab)).join('')}</div>`;
+    });
+    if (!totalVisible) html += `<div class="empty"><div class="empty-icon">&#128269;</div>No hay resultados para tu búsqueda.</div>`;
+  } else {
+    let recursos = section.recursos.filter(r => {
+      const matchType = activeType === 'all' || normalizeTipo(r.tipo) === activeType;
+      const matchQ = !q || r.titulo.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q);
+      return matchType && matchQ;
+    });
+    if (!recursos.length) {
+      html += `<div class="empty"><div class="empty-icon">&#128269;</div>No hay resultados para tu búsqueda.</div>`;
+    } else {
+      html += `<div class="cards-grid">${recursos.map(r => cardHTML(r, activeTab)).join('')}</div>`;
+    }
+  }
+
+  document.getElementById('main').innerHTML = html;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function showLoading() {
+  document.getElementById('tabs').innerHTML = '<div style="padding:12px 0;color:var(--text-tertiary);font-size:13px;">Cargando biblioteca...</div>';
+  document.getElementById('main').innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>Conectando con la base de datos...</div>';
+}
+
+function showError(msg) {
+  document.getElementById('main').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>${msg}<br><br><small style="color:var(--text-tertiary)">Usando datos locales como respaldo.</small></div>`;
+}
+
+async function init() {
+  showLoading();
+
+  // Empezamos siempre con el contenido base hardcodeado
+  LOADED_DATA = DATA.map(cat => JSON.parse(JSON.stringify(cat)));
+
+  try {
+    const res = await fetch('/.netlify/functions/biblioteca');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+
+    // Mergeamos los recursos de Notion encima del contenido base
+    json.data.forEach(notionCat => {
+      const existing = LOADED_DATA.find(d => d.categoria === notionCat.categoria);
+      if (existing) {
+        if (existing.esScores && notionCat.esScores) {
+          notionCat.grupos.forEach(notionGrupo => {
+            const existingGrupo = existing.grupos.find(g => g.label === notionGrupo.label);
+            if (existingGrupo) {
+              existingGrupo.recursos.push(...notionGrupo.recursos);
+            } else {
+              existing.grupos.push(notionGrupo);
+            }
+          });
+        } else if (!existing.esScores && notionCat.recursos) {
+          existing.recursos.push(...notionCat.recursos);
+        }
+      } else {
+        // Categoria nueva desde Notion: la agregamos completa
+        LOADED_DATA.push(notionCat);
+      }
+    });
+
+  } catch (err) {
+    console.warn('No se pudo cargar desde Notion, usando solo datos locales:', err.message);
+  }
+
+  activeTab = LOADED_DATA[0].categoria;
+  renderTabs();
+  renderAll();
+}
+
+init();
+</script>
+
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="modalOverlay" onclick="maybeCloseModal(event)">
+  <div class="modal-box" id="modalBox">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+</body>
+</html>
