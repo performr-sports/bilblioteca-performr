@@ -1,3 +1,5 @@
+
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -1098,7 +1100,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 // ─── MAIN RENDER ─────────────────────────────────────────────────────────────
 function renderAll() {
   const q = document.getElementById('search').value.toLowerCase().trim();
-  const section = DATA.find(d => d.categoria === activeTab);
+  const section = LOADED_DATA.find(d => d.categoria === activeTab);
   if (!section) return;
 
   let html = renderTypeFilters();
