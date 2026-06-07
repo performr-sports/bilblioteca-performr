@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -1110,7 +1109,7 @@ function renderAll() {
     section.grupos.forEach(grupo => {
       let recursos = grupo.recursos.filter(r => {
         const matchType = activeType === 'all' || normalizeTipo(r.tipo) === activeType;
-        const matchQ = !q || r.titulo.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q);
+        const matchQ = !q || (r.titulo||'').toLowerCase().includes(q) || (r.desc||'').toLowerCase().includes(q);
         return matchType && matchQ;
       });
       if (!recursos.length) return;
@@ -1122,7 +1121,7 @@ function renderAll() {
   } else {
     let recursos = section.recursos.filter(r => {
       const matchType = activeType === 'all' || normalizeTipo(r.tipo) === activeType;
-      const matchQ = !q || r.titulo.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q);
+      const matchQ = !q || (r.titulo||'').toLowerCase().includes(q) || (r.desc||'').toLowerCase().includes(q);
       return matchType && matchQ;
     });
     if (!recursos.length) {
@@ -1157,30 +1156,46 @@ async function init() {
     const json = await res.json();
     if (json.error) throw new Error(json.error);
 
-    // Mergeamos los recursos de Notion encima del contenido base
+    console.log('[Notion] Recursos recibidos:', json.data.length, 'categorías');
+
     json.data.forEach(notionCat => {
+      console.log('[Notion] Procesando categoría:', notionCat.categoria);
       const existing = LOADED_DATA.find(d => d.categoria === notionCat.categoria);
-      if (existing) {
-        if (existing.esScores && notionCat.esScores) {
-          notionCat.grupos.forEach(notionGrupo => {
-            const existingGrupo = existing.grupos.find(g => g.label === notionGrupo.label);
-            if (existingGrupo) {
-              existingGrupo.recursos.push(...notionGrupo.recursos);
-            } else {
-              existing.grupos.push(notionGrupo);
-            }
-          });
-        } else if (!existing.esScores && notionCat.recursos) {
-          existing.recursos.push(...notionCat.recursos);
-        }
-      } else {
-        // Categoria nueva desde Notion: la agregamos completa
+
+      if (!existing) {
+        console.log('[Notion] Categoría nueva, agregando completa:', notionCat.categoria);
         LOADED_DATA.push(notionCat);
+        return;
+      }
+
+      if (existing.esScores && notionCat.esScores) {
+        notionCat.grupos.forEach(notionGrupo => {
+          console.log('[Notion] Mergeando grupo:', notionGrupo.label, '—', notionGrupo.recursos.length, 'recurso(s)');
+          const existingGrupo = existing.grupos.find(g => g.label === notionGrupo.label);
+          if (existingGrupo) {
+            existingGrupo.recursos.push(...notionGrupo.recursos);
+            console.log('[Notion] ✓ Agregado a grupo existente:', notionGrupo.label);
+          } else {
+            existing.grupos.push(notionGrupo);
+            console.log('[Notion] ✓ Grupo nuevo agregado:', notionGrupo.label);
+          }
+        });
+      } else if (!existing.esScores && notionCat.recursos) {
+        console.log('[Notion] Mergeando', notionCat.recursos.length, 'recursos en:', notionCat.categoria);
+        // Aseguramos que los recursos tengan campos válidos
+        const safeRecursos = notionCat.recursos.map(r => ({
+          ...r,
+          desc: r.desc || '',
+          titulo: r.titulo || '—',
+          tipo: r.tipo || 'tip',
+        }));
+        existing.recursos.push(...safeRecursos);
+        console.log('[Notion] ✓ Recursos agregados. Total ahora:', existing.recursos.length);
       }
     });
 
   } catch (err) {
-    console.warn('No se pudo cargar desde Notion, usando solo datos locales:', err.message);
+    console.warn('[Notion] Error al cargar:', err.message);
   }
 
   activeTab = LOADED_DATA[0].categoria;
