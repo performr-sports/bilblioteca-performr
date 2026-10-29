@@ -1151,58 +1151,64 @@ function showError(msg) {
   document.getElementById('main').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>${msg}<br><br><small style="color:var(--text-tertiary)">Usando datos locales como respaldo.</small></div>`;
 }
 
+// Normaliza títulos para comparar (sin tildes, minúsculas, sin espacios extra)
+function keyTitulo(t) {
+  return (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+// Índice de los recursos del DATA local, por título.
+// Se usa solo para completar lo que Notion no tiene (ej: las "zonas" de los scores).
+function buildLocalIndex() {
+  const idx = {};
+  DATA.forEach(cat => {
+    (cat.recursos || []).forEach(r => { idx[keyTitulo(r.titulo)] = r; });
+    (cat.grupos || []).forEach(g => g.recursos.forEach(r => { idx[keyTitulo(r.titulo)] = r; }));
+  });
+  return idx;
+}
+
+// Completa un recurso de Notion con los campos que solo existen en el DATA local
+function enrich(r, localIdx) {
+  const local = localIdx[keyTitulo(r.titulo)];
+  const out = {
+    ...r,
+    desc: r.desc || '',
+    titulo: r.titulo || '—',
+    tipo: r.tipo || 'tip',
+  };
+  if (local) {
+    if (!out.zonas && local.zonas) out.zonas = local.zonas;
+    if (!out.extra && local.extra) out.extra = local.extra;
+    if (!out.video && local.video) out.video = local.video;
+    if (!out.imagen && local.imagen) out.imagen = local.imagen;
+  }
+  return out;
+}
+
 async function init() {
   showLoading();
-
-  // Empezamos siempre con el contenido base hardcodeado
-  LOADED_DATA = DATA.map(cat => JSON.parse(JSON.stringify(cat)));
 
   try {
     const res = await fetch('/.netlify/functions/biblioteca');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     if (json.error) throw new Error(json.error);
+    if (!json.data || !json.data.length) throw new Error('Notion no devolvió recursos');
 
-    console.log('[Notion] Recursos recibidos:', json.data.length, 'categorías');
-
-    json.data.forEach(notionCat => {
-      console.log('[Notion] Procesando categoría:', notionCat.categoria);
-      const existing = LOADED_DATA.find(d => d.categoria === notionCat.categoria);
-
-      if (!existing) {
-        console.log('[Notion] Categoría nueva, agregando completa:', notionCat.categoria);
-        LOADED_DATA.push(notionCat);
-        return;
+    // Notion es la fuente principal: se muestra solo lo que está en Notion con Activo = ✓
+    const localIdx = buildLocalIndex();
+    LOADED_DATA = json.data.map(cat => {
+      if (cat.grupos) {
+        return { ...cat, grupos: cat.grupos.map(g => ({ ...g, recursos: g.recursos.map(r => enrich(r, localIdx)) })) };
       }
-
-      if (existing.esScores && notionCat.esScores) {
-        notionCat.grupos.forEach(notionGrupo => {
-          console.log('[Notion] Mergeando grupo:', notionGrupo.label, '—', notionGrupo.recursos.length, 'recurso(s)');
-          const existingGrupo = existing.grupos.find(g => g.label === notionGrupo.label);
-          if (existingGrupo) {
-            existingGrupo.recursos.push(...notionGrupo.recursos);
-            console.log('[Notion] ✓ Agregado a grupo existente:', notionGrupo.label);
-          } else {
-            existing.grupos.push(notionGrupo);
-            console.log('[Notion] ✓ Grupo nuevo agregado:', notionGrupo.label);
-          }
-        });
-      } else if (!existing.esScores && notionCat.recursos) {
-        console.log('[Notion] Mergeando', notionCat.recursos.length, 'recursos en:', notionCat.categoria);
-        // Aseguramos que los recursos tengan campos válidos
-        const safeRecursos = notionCat.recursos.map(r => ({
-          ...r,
-          desc: r.desc || '',
-          titulo: r.titulo || '—',
-          tipo: r.tipo || 'tip',
-        }));
-        existing.recursos.push(...safeRecursos);
-        console.log('[Notion] ✓ Recursos agregados. Total ahora:', existing.recursos.length);
-      }
+      return { ...cat, recursos: (cat.recursos || []).map(r => enrich(r, localIdx)) };
     });
 
+    console.log('[Notion] Cargadas', LOADED_DATA.length, 'categorías desde Notion');
   } catch (err) {
-    console.warn('[Notion] Error al cargar:', err.message);
+    // Respaldo: si Notion falla, usamos el contenido local
+    console.warn('[Notion] Error al cargar, usando datos locales:', err.message);
+    LOADED_DATA = DATA.map(cat => JSON.parse(JSON.stringify(cat)));
   }
 
   activeTab = LOADED_DATA[0].categoria;
